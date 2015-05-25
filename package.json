@@ -1,0 +1,30 @@
+{
+  "name": "conext",
+  "version": "1.0.0",
+  "description": "use co to write express middleware",
+  "main": "index.js",
+  "scripts": {
+    "test": "rm -rf coverage/ && prove --exec \"istanbul cover --include-pid --report none --print none\" test/cases/*.js && istanbul report --report cobertura --report html --report text-summary"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/undoZen/conext.git"
+  },
+  "keywords": [
+    "co",
+    "express",
+    "middleware"
+  ],
+  "author": "undoZen <opensource@undozen.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/undoZen/conext/issues"
+  },
+  "homepage": "https://github.com/undoZen/conext#readme",
+  "devDependencies": {
+    "express": "^4.12.4",
+    "istanbul-harmony": "^0.3.12",
+    "supertest": "^1.0.1",
+    "tape": "^4.0.0"
+  }
+}
