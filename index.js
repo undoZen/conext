@@ -14,7 +14,7 @@ var conext = module.exports = function (gn) {
     var wrapped = co.wrap(gn);
     return function (req, res, next) {
         next = once(next);
-        wrapped.call(this, req, res, next).then(next).catch(next);
+        wrapped.call(this, req, res, next).catch(next);
     };
 };
 conext.run = function (middleware, req, res) {
