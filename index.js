@@ -10,10 +10,21 @@ function once(fn) {
         return fn.apply(this, arguments);
     }
 }
-module.exports = function (gn) {
+var conext = module.exports = function (gn) {
     var wrapped = co.wrap(gn);
     return function (req, res, next) {
         next = once(next);
         wrapped.call(this, req, res, next).then(next).catch(next);
     };
+};
+conext.run = function (middleware, req, res) {
+    return new Promise(function (resolve, reject) {
+        middleware(req, res, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
 }
