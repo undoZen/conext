@@ -26,5 +26,8 @@
     "istanbul-harmony": "^0.3.12",
     "supertest": "^1.0.1",
     "tape": "^4.0.0"
+  },
+  "dependencies": {
+    "co": "^4"
   }
 }
