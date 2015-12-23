@@ -1,6 +1,6 @@
 {
   "name": "conext",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "use co to write express middleware",
   "main": "index.js",
   "scripts": {
