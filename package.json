@@ -12,6 +12,7 @@
   },
   "keywords": [
     "co",
+    "bluebird",
     "express",
     "middleware"
   ],
