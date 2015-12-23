@@ -1,15 +1,17 @@
 'use strict';
 var tape = require('tape');
 var supertest = require('supertest');
-var co = require('co');
 var conext = require('../../');
 var express = require('express');
 
 var app = express();
+app.get('/nongen', conext(function (req, res, next) {
+    res.end('nongen');
+}));
 app.get('/ok', conext(function * (req, res, next) {
     res.end(yield Promise.resolve('ok'));
 }));
-app.get('/wrapped', conext(co.wrap(function * (req, res, next) {
+app.get('/wrapped', conext(require('bluebird').coroutine(function * (req, res, next) {
     res.end(yield Promise.resolve('wrapped ok'));
 })));
 var midThrow = conext(function * (req, res, next) {
@@ -44,6 +46,17 @@ tape(function (test) {
     .end(function (err, response) {
         test.ok(!err);
         test.equal(response.text, 'ok');
+    });
+});
+
+tape('nongen', function (test) {
+    test.plan(2);
+    supertest(app)
+    .get('/nongen')
+    .expect(200)
+    .end(function (err, response) {
+        test.ok(!err);
+        test.equal(response.text, 'nongen');
     });
 });
 
