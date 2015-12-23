@@ -8,6 +8,9 @@ var app = express();
 app.get('/nongen', conext(function (req, res, next) {
     res.end('nongen');
 }));
+app.get('/coconext', conext(conext(function * (req, res, next) {
+    res.end(yield Promise.resolve('coconext'));
+})));
 app.get('/ok', conext(function * (req, res, next) {
     res.end(yield Promise.resolve('ok'));
 }));
@@ -57,6 +60,17 @@ tape('nongen', function (test) {
     .end(function (err, response) {
         test.ok(!err);
         test.equal(response.text, 'nongen');
+    });
+});
+
+tape('coconext', function (test) {
+    test.plan(2);
+    supertest(app)
+    .get('/coconext')
+    .expect(200)
+    .end(function (err, response) {
+        test.ok(!err);
+        test.equal(response.text, 'coconext');
     });
 });
 

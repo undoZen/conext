@@ -14,16 +14,16 @@ function once(fn) {
 var GeneratorFunction = (function *(){}).constructor;
 function isGeneratorFunction(gn) {
     return gn instanceof GeneratorFunction ||
-        !!gn.toString().match(/^function\s+\*/);
+        !!gn.toString().match(/^function\s*\*/);
 }
 
 var conext = module.exports = function (gn) {
-    var isCoNextWrapped = gn.toString().indexOf('/* -- conext wrapped -- */') > -1;
+    var isCoNext2Wrapped = gn.toString().indexOf('/* conext@2 wrapped */') > -1;
     var isGenerator = isGeneratorFunction(gn);
-    var isBluebirdCoroutineWrapped = gn.toString().match(/PromiseSpawn/);
+    var isBluebirdCoroutineWrapped = gn.toString().match(/PromiseSpawn\$/);
 
     var fn;
-    if (isCoNextWrapped) {
+    if (isCoNext2Wrapped) {
         return gn;
     } else if (isGenerator) {
         fn = Promise.coroutine(gn);
@@ -33,8 +33,7 @@ var conext = module.exports = function (gn) {
         return gn;
     }
 
-    return function (req, res, next) {
-        /* -- conext wrapped -- */
+    return function (req, res, next) { /* conext@2 wrapped */
         next = once(next);
         fn.call(this, req, res, next).catch(next);
     };
