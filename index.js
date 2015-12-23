@@ -10,12 +10,33 @@ function once(fn) {
         return fn.apply(this, arguments);
     }
 }
+
+var GeneratorFunction = (function *(){}).constructor;
+function isGeneratorFunction(gn) {
+    return gn instanceof GeneratorFunction ||
+        !!gn.toString().match(/^function\s+\*/);
+}
+
 var conext = module.exports = function (gn) {
-    var wrapped = gn.toString().match(/PromiseSpawn/)
-        ? gn : Promise.coroutine(gn);
+    var isCoNextWrapped = gn.toString().indexOf('/* -- conext wrapped -- */') > -1;
+    var isGenerator = isGeneratorFunction(gn);
+    var isBluebirdCoroutineWrapped = gn.toString().match(/PromiseSpawn/);
+
+    var fn;
+    if (isCoNextWrapped) {
+        return gn;
+    } else if (isGenerator) {
+        fn = Promise.coroutine(gn);
+    } else if (isBluebirdCoroutineWrapped) {
+        fn = gn;
+    } else {
+        return gn;
+    }
+
     return function (req, res, next) {
+        /* -- conext wrapped -- */
         next = once(next);
-        wrapped.call(this, req, res, next).catch(next);
+        fn.call(this, req, res, next).catch(next);
     };
 };
 conext.run = function (middleware, req, res) {
