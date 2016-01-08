@@ -20,23 +20,36 @@ function isGeneratorFunction(gn) {
 var conext = module.exports = function (gn) {
     var isCoNext2Wrapped = gn.toString().indexOf('/* conext@2 wrapped */') > -1;
     var isGenerator = isGeneratorFunction(gn);
-    var isBluebirdCoroutineWrapped = gn.toString().match(/PromiseSpawn\$/);
 
     var fn;
     if (isCoNext2Wrapped) {
         return gn;
     } else if (isGenerator) {
         fn = Promise.coroutine(gn);
-    } else if (isBluebirdCoroutineWrapped) {
-        fn = gn;
     } else {
-        return gn;
+        fn = gn;
     }
 
-    return function (req, res, next) { /* conext@2 wrapped */
-        next = once(next);
-        fn.call(this, req, res, next).catch(next);
+    var ref = function () { /* conext@2 wrapped */
+        var next = once(fn.length >= 4 ? arguments[3] : arguments[2]);
+        var p = fn.apply(this, arguments);
+        if (p && p.catch && typeof p.catch === 'function') {
+            p.catch(function (err) {
+                console.log(err.stack);
+                next(err);
+            });
+        }
     };
+    // keep arity
+    if (fn.length >= 4) {
+        return function (_1, _2, _3, _4) {
+            return ref.apply(this, arguments);
+        };
+    } else {
+        return function (_1, _2, _3) {
+            return ref.apply(this, arguments);
+        };
+    }
 };
 conext.run = function (middleware, req, res) {
     return new Promise(function (resolve, reject) {
