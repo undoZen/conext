@@ -41,13 +41,13 @@ var conext = module.exports = function (gn) {
         }
     };
     // keep arity
-    if (fn.length >= 4) {
+    if (gn.length >= 4) {
         return function (_1, _2, _3, _4) {
-            return ref.apply(this, arguments);
+            ref.apply(this, arguments);
         };
     } else {
         return function (_1, _2, _3) {
-            return ref.apply(this, arguments);
+            ref.apply(this, arguments);
         };
     }
 };

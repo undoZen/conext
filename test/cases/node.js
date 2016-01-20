@@ -22,7 +22,12 @@ var midThrow = conext(function * (req, res, next) {
 });
 app.get('/throw', midThrow);
 app.get('/err', conext(function * (req, res, next) {
-    return Promise.reject(new Error('errmsg'));
+    throw new Error('errmsg');
+}));
+app.get('/errcaught', conext(function * (req, res, next) {
+    throw new Error('errmsg');
+}), conext(function * (err, req, res, next) {
+    res.end(err.message);
 }));
 
 var resultOk = conext(function * (req, res, next) {
@@ -104,6 +109,17 @@ tape(function (test) {
     .end(function (err, response) {
         test.ok(!err);
         test.ok(response.text.indexOf('Error: errmsg') > -1);
+    });
+});
+
+tape(function (test) {
+    test.plan(2);
+    supertest(app)
+    .get('/errcaught')
+    .expect(200)
+    .end(function (err, response) {
+        test.ok(!err);
+        test.equal(response.text.trim(), 'errmsg');
     });
 });
 
