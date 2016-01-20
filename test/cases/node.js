@@ -4,6 +4,14 @@ var supertest = require('supertest');
 var conext = require('../../');
 var express = require('express');
 
+var Promise = require('bluebird');
+
+function sleep(ms) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+    });
+}
+
 var app = express();
 app.get('/nongen', conext(function (req, res, next) {
     res.end('nongen');
@@ -14,7 +22,7 @@ app.get('/coconext', conext(conext(function * (req, res, next) {
 app.get('/ok', conext(function * (req, res, next) {
     res.end(yield Promise.resolve('ok'));
 }));
-app.get('/wrapped', conext(require('bluebird').coroutine(function * (req, res, next) {
+app.get('/wrapped', conext(Promise.coroutine(function * (req, res, next) {
     res.end(yield Promise.resolve('wrapped ok'));
 })));
 var midThrow = conext(function * (req, res, next) {
@@ -40,12 +48,35 @@ app.get('/okmid', conext(function * (req, res, next) {
     res.type('json');
     res.send(res.result);
 }));
-app.get('/omitnext', conext(function * (req, res) {
+app.get('/omitnext',
+conext(function * (req, res) {
     yield conext.run(resultOk, req, res);
-}), conext(function * (req, res) {
+    res.result.start = Date.now();
+}),
+conext(Promise.coroutine(function * (req, res, next) {
+    res.result.hello = yield Promise.resolve('world');
+    yield sleep(100);
+    next();
+    return true;
+})),
+conext(function * (req, res) {
+    yield sleep(100);
+}),
+function (req, res, next) {
+    res.result.normal = true;
+    next();
+},
+conext(function * (req, res) {
+    yield sleep(100);
+}),
+conext(function * (req, res) {
+    res.result.stop = Date.now();
+}),
+conext(function * (req, res) {
     res.type('json');
     res.send(res.result);
-}));
+})
+);
 app.get('/throwmid', conext(function * (req, res, next) {
     yield conext.run(midThrow, req, res);
     res.type('json');
@@ -108,13 +139,16 @@ tape(function (test) {
 });
 
 tape(function (test) {
-    test.plan(2);
+    test.plan(4);
     supertest(app)
     .get('/omitnext')
     .expect(200)
     .end(function (err, response) {
         test.ok(!err);
-        test.deepEqual(response.body, {ok: true});
+        test.ok(response.body.ok);
+        test.equal(response.body.hello, 'world');
+        console.log(response.body.stop - response.body.start);
+        test.ok(response.body.stop - response.body.start > 300);
     });
 });
 

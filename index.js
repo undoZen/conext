@@ -11,15 +11,9 @@ function once(fn) {
     }
 }
 
-var GeneratorFunction = (function *(){}).constructor;
-function isGeneratorFunction(gn) {
-    return gn instanceof GeneratorFunction ||
-        !!gn.toString().match(/^function\s*\*/);
-}
-
 var conext = module.exports = function (gn) {
     var isCoNext2Wrapped = gn.toString().indexOf('/* conext@3 wrapped */') > -1;
-    var isGenerator = isGeneratorFunction(gn);
+    var isGenerator = gn.toString().indexOf('function*') === 0;
 
     var fn;
     if (isCoNext2Wrapped) {
@@ -47,12 +41,13 @@ var conext = module.exports = function (gn) {
         return function (_1, _2, _3, _4) {
             ref.apply(this, arguments);
         };
-    } else if (gn.length === 3) {
+    } else if (gn.length === 3 || gn.length === 0) {
+        // if gn.length === 0, it may be already wrapped, so skip
         return function (_1, _2, _3) {
             ref.apply(this, arguments);
         };
     } else {
-        return function (_1, _2, next) {
+        return function () {
             var p = ref.apply(this, arguments);
             if (p && p.then && typeof p.then === 'function' && typeof p._next === 'function') {
                 p.then(p._next);
