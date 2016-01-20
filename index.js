@@ -18,7 +18,7 @@ function isGeneratorFunction(gn) {
 }
 
 var conext = module.exports = function (gn) {
-    var isCoNext2Wrapped = gn.toString().indexOf('/* conext@2 wrapped */') > -1;
+    var isCoNext2Wrapped = gn.toString().indexOf('/* conext@3 wrapped */') > -1;
     var isGenerator = isGeneratorFunction(gn);
 
     var fn;
@@ -30,7 +30,7 @@ var conext = module.exports = function (gn) {
         fn = gn;
     }
 
-    var ref = function () { /* conext@2 wrapped */
+    var ref = function () { /* conext@3 wrapped */
         var next = once(fn.length >= 4 ? arguments[3] : arguments[2]);
         var p = fn.apply(this, arguments);
         if (p && p.catch && typeof p.catch === 'function') {
@@ -38,16 +38,25 @@ var conext = module.exports = function (gn) {
                 console.log(err.stack);
                 next(err);
             });
+            p._next = next;
+            return p;
         }
     };
     // keep arity
-    if (fn.length >= 4) {
+    if (gn.length >= 4) {
         return function (_1, _2, _3, _4) {
-            return ref.apply(this, arguments);
+            ref.apply(this, arguments);
+        };
+    } else if (gn.length === 3) {
+        return function (_1, _2, _3) {
+            ref.apply(this, arguments);
         };
     } else {
-        return function (_1, _2, _3) {
-            return ref.apply(this, arguments);
+        return function (_1, _2, next) {
+            var p = ref.apply(this, arguments);
+            if (p && p.then && typeof p.then === 'function' && typeof p._next === 'function') {
+                p.then(p._next);
+            }
         };
     }
 };

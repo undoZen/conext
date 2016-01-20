@@ -22,7 +22,12 @@ var midThrow = conext(function * (req, res, next) {
 });
 app.get('/throw', midThrow);
 app.get('/err', conext(function * (req, res, next) {
-    return Promise.reject(new Error('errmsg'));
+    throw new Error('errmsg');
+}));
+app.get('/errcaught', conext(function * (req, res, next) {
+    throw new Error('errmsg');
+}), conext(function * (err, req, res, next) {
+    res.end(err.message);
 }));
 
 var resultOk = conext(function * (req, res, next) {
@@ -32,6 +37,12 @@ var resultOk = conext(function * (req, res, next) {
 });
 app.get('/okmid', conext(function * (req, res, next) {
     yield conext.run(resultOk, req, res);
+    res.type('json');
+    res.send(res.result);
+}));
+app.get('/omitnext', conext(function * (req, res) {
+    yield conext.run(resultOk, req, res);
+}), conext(function * (req, res) {
     res.type('json');
     res.send(res.result);
 }));
@@ -99,11 +110,33 @@ tape(function (test) {
 tape(function (test) {
     test.plan(2);
     supertest(app)
+    .get('/omitnext')
+    .expect(200)
+    .end(function (err, response) {
+        test.ok(!err);
+        test.deepEqual(response.body, {ok: true});
+    });
+});
+
+tape(function (test) {
+    test.plan(2);
+    supertest(app)
     .get('/err')
     .expect(500)
     .end(function (err, response) {
         test.ok(!err);
         test.ok(response.text.indexOf('Error: errmsg') > -1);
+    });
+});
+
+tape(function (test) {
+    test.plan(2);
+    supertest(app)
+    .get('/errcaught')
+    .expect(200)
+    .end(function (err, response) {
+        test.ok(!err);
+        test.equal(response.text.trim(), 'errmsg');
     });
 });
 
