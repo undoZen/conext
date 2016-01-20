@@ -7,7 +7,7 @@ function once(fn) {
             return;
         }
         called = true;
-        return fn.apply(this, arguments);
+        return typeof fn === 'function' && fn.apply(this, arguments);
     }
 }
 
