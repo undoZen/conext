@@ -47,10 +47,15 @@ var conext = module.exports = function (gn) {
             ref.apply(this, arguments);
         };
     } else {
-        return function () {
+        return function (req, res) {
             var p = ref.apply(this, arguments);
             if (p && p.then && typeof p.then === 'function' && typeof p._next === 'function') {
-                p.then(p._next);
+                p.then(function (result) {
+                    if (result === false) {
+                        return;
+                    }
+                    p._next.call(null);
+                });
             }
         };
     }
