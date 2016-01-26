@@ -34,7 +34,7 @@ app.use(conext(function *(req, res) {
 });
 app.use(conext(function *(req, res) {
     if (yield asyncB()) {
-        return 'next'; // or just `return;`, `return 'next';` is more readable
+        return 'next'; // or just `return;`, but `return 'next';` is more readable
     } else {
         return 'next route'; // will call you next('route'), which is a express@^4 feature I never use;
     }
