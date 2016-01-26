@@ -29,7 +29,7 @@ in 3.x, conext will help you call `next()` if `gn.length === 1` or `gn.length ==
 ```js
 var conext = require('conext');
 app.use(conext(function *(req, res) {
-    res.localResultA = yield asyncA();
+    res.locals.resultA = yield asyncA();
     // you can omit `return 'next';` here, in conext it will compare returned value to undefined or 'next' and then call next()
 });
 app.use(conext(function *(req, res) {
@@ -39,7 +39,12 @@ app.use(conext(function *(req, res) {
         return 'next route'; // will call you next('route'), which is a express@^4 feature I never use;
     }
 }, function (req, res, next) {
+    res.locals.resultB = true
     // this will never reached if asyncB() resolved by falsy value
+});
+app.use(conext(function *(req, res) {
+    res.json(res.locals);
+    return false; // `return false` or `return null` to indicate you've already taken care of response, like this.respond = true in koa
 });
 // ...
 ```
@@ -50,11 +55,11 @@ If you are using CoffeeScript, it's more convenience for you to keep using next 
 conext = require('conext')
 
 app.use conext (req, res, next) ->
-    res.local.withOutYieldCompilesTo = 'normal function';
+    res.locals.withOutYieldCompilesTo = 'normal function';
     next()
 
 app.use conext (req, res, next) ->
-    res.local.withYieldCompilesTo = yield Promise.resolve('generator function');
+    res.locals.withYieldCompilesTo = yield Promise.resolve('generator function');
     next()
 ```
 
