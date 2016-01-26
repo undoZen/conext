@@ -51,10 +51,11 @@ var conext = module.exports = function (gn) {
             var p = ref.apply(this, arguments);
             if (p && p.then && typeof p.then === 'function' && typeof p._next === 'function') {
                 p.then(function (result) {
-                    if (result === false) {
-                        return;
+                    if (result === void 0 || result === 'next') {
+                        return p._next.call(null);
+                    } else if (result === 'next route') {
+                        return p._next.call(null, 'route');
                     }
-                    p._next.call(null);
                 });
             }
         };
