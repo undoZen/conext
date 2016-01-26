@@ -12,11 +12,11 @@ function once(fn) {
 }
 
 var conext = module.exports = function (gn) {
-    var isCoNext2Wrapped = gn.toString().indexOf('/* conext@3 wrapped */') > -1;
+    var isCoNext3Wrapped = gn.toString().indexOf('/* conext@3 wrapped */') > -1;
     var isGenerator = gn.toString().indexOf('function*') === 0;
 
     var fn;
-    if (isCoNext2Wrapped) {
+    if (isCoNext3Wrapped) {
         return gn;
     } else if (isGenerator) {
         fn = Promise.coroutine(gn);
@@ -47,10 +47,10 @@ var conext = module.exports = function (gn) {
             ref.apply(this, arguments);
         };
     } else {
-        return function (req, res) {
+        return function (req, res, next) {
             var p = ref.apply(this, arguments);
             if (p && p.then && typeof p.then === 'function' && typeof p._next === 'function') {
-                p.then(function (result) {
+                return p.then(function (result) {
                     if (result === void 0 || result === 'next') {
                         return p._next.call(null);
                     } else if (result === 'next route') {
