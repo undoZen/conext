@@ -24,12 +24,13 @@ module.exports = function (gn) {
 
 ## usage
 
-in 3.x, conext will help you call next() if gn.length === 1 or gn.length === 2, so you can avoid next() to be called twice
+in 3.x, conext will help you call `next()` if `gn.length === 1` or `gn.length === 2`, so you can avoid `next()` to be called twice
 
 ```js
 var conext = require('conext');
 app.use(conext(function *(req, res) {
     res.localResultA = yield asyncA();
+    // you can omit `return 'next';` here, in conext it will compare returned value to undefined or 'next' and then call next()
 });
 app.use(conext(function *(req, res) {
     if (yield asyncB()) {
