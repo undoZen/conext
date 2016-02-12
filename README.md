@@ -44,7 +44,7 @@ app.use(conext(function *(req, res) {
 });
 app.use(conext(function *(req, res) {
     res.json(res.locals);
-    return false; // `return false` or `return null` to indicate you've already taken care of response, like this.respond = true in koa
+    return false; // `return false` to indicate you've already taken care of response, like this.respond = true in koa
 });
 // ...
 ```
